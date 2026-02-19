@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book a Ride - RIDEX</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+
+        :root {
+            --bg-dark: #0a0a0c;
+            --card-bg: #151518;
+            --brand-gradient: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+            --hover-bg: rgba(255, 255, 255, 0.05);
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: white;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+        }
+
+        .glass-nav {
+            background: rgba(10, 10, 12, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .search-container {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            display: flex;
+            align-items: stretch;
+            position: relative;
+        }
+
+        .input-group {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            min-height: 80px;
+            position: relative;
+        }
+
+        .input-group:hover {
+            background-color: var(--hover-bg);
+        }
+
+        @media (min-width: 1024px) {
+            .input-group {
+                border-bottom: none;
+                border-right: 1px solid rgba(255, 255, 255, 0.05);
+            }
+            .input-group:last-child { border-right: none; }
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            right: 1.5rem;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            opacity: 0.6;
+        }
+
+        .input-group:hover .input-wrapper i {
+            color: white;
+            opacity: 1;
+            transform: translateX(-4px) scale(1.1);
+        }
+
+        input {
+            background: transparent;
+            border: none;
+            color: white;
+            outline: none;
+            width: 100%;
+            height: 100%;
+            padding: 0 4rem 0 1.5rem;
+            appearance: none;
+            cursor: text;
+            font-size: 1rem;
+        }
+
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            position: absolute;
+            right: 1.5rem;
+            width: 24px;
+            height: 24px;
+            opacity: 0;
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        input::placeholder { color: #4b5563; }
+
+        /* --- Dynamic Dropdown Styling --- */
+        .suggestions-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #1a1a1f;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            margin-top: 8px;
+            max-height: 250px;
+            overflow-y: auto;
+            z-index: 100;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: none;
+        }
+
+        .suggestion-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.9rem;
+        }
+
+        .suggestion-item:hover {
+            background: rgba(139, 92, 246, 0.1);
+            color: #a78bfa;
+        }
+
+        .suggestion-item i {
+            color: #4b5563;
+            font-size: 0.8rem;
+        }
+
+        .vehicle-selector {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            padding: 4px;
+            display: inline-flex;
+            gap: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .vehicle-option {
+            padding: 8px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.875rem;
+            color: #94a3b8;
+        }
+
+        .vehicle-option.active {
+            background: var(--brand-gradient);
+            color: white;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+        }
+
+        .search-btn-container {
+            padding: 8px;
+            background: var(--card-bg);
+            display: flex;
+            align-items: center;
+        }
+
+        .btn-search {
+            background: var(--brand-gradient);
+            transition: all 0.3s ease;
+            height: 100%;
+            min-width: 140px;
+        }
+
+        .btn-search:hover {
+            filter: brightness(1.1);
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.3);
+            transform: scale(0.98);
+        }
+
+        .ride-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            transition: all 0.3s ease;
+        }
+
+        .ride-card:hover {
+            border-color: rgba(139, 92, 246, 0.3);
+            transform: translateY(-2px);
+            background: #1c1c21;
+        }
+
+        /* Custom Scrollbar */
+        .suggestions-list::-webkit-scrollbar { width: 6px; }
+        .suggestions-list::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <nav class="glass-nav fixed top-0 w-full z-50 px-6 py-4 flex items-center justify-between">
+        <a href="ex.html" class="flex items-center gap-2 no-underline">
+            <div class="w-8 h-8 bg-violet-600 rounded-lg flex items-center justify-center font-bold text-white">R</div>
+            <span class="text-xl font-bold tracking-tight text-white">RIDEX</span>
+        </a>
+        <div class="flex items-center gap-4">
+            <a href="profile.html" class="text-gray-400 hover:text-white transition-colors">
+                <i class="fa-solid fa-user-circle text-2xl"></i>
+            </a>
+        </div>
+    </nav>
+
+    <main class="pt-32 pb-20 px-6 max-w-6xl mx-auto">
+        <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
+            <div>
+                <h1 class="text-4xl font-extrabold mb-2 text-center md:text-left">Find a Ride</h1>
+                <p class="text-gray-500">Connecting India, one journey at a time.</p>
+            </div>
+
+            <div class="vehicle-selector mx-auto md:mx-0">
+                <div class="vehicle-option active" onclick="selectVehicle(this, 'car')">
+                    <i class="fa-solid fa-car"></i> Car
+                </div>
+                <div class="vehicle-option" onclick="selectVehicle(this, 'bike')">
+                    <i class="fa-solid fa-motorcycle"></i> Bike
+                </div>
+            </div>
+        </div>
+
+        <!-- Search Bar with Indian City Dropdowns -->
+        <div class="search-container shadow-2xl">
+            <div class="grid grid-cols-1 lg:grid-cols-10 w-full items-stretch">
+                <!-- Departure -->
+                <div class="input-group lg:col-span-3">
+                    <div class="input-wrapper">
+                        <input type="text" id="from-input" placeholder="Leaving from..." autocomplete="off">
+                        <i class="fa-solid fa-circle-dot text-violet-500"></i>
+                        <div id="from-suggestions" class="suggestions-list"></div>
+                    </div>
+                </div>
+                <!-- Arrival -->
+                <div class="input-group lg:col-span-3">
+                    <div class="input-wrapper">
+                        <input type="text" id="to-input" placeholder="Going to..." autocomplete="off">
+                        <i class="fa-solid fa-location-dot text-pink-500"></i>
+                        <div id="to-suggestions" class="suggestions-list"></div>
+                    </div>
+                </div>
+                <!-- Date -->
+                <div class="input-group lg:col-span-2">
+                    <div class="input-wrapper">
+                        <input type="date" class="text-gray-400">
+                        <i class="fa-solid fa-calendar text-gray-500"></i>
+                    </div>
+                </div>
+                <!-- Search Button -->
+                <div class="lg:col-span-2 search-btn-container">
+                    <button class="btn-search w-full py-4 rounded-xl font-bold text-white uppercase tracking-widest">
+                        Search
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-6 mt-16">
+            <div class="flex items-center justify-between border-b border-gray-800 pb-4">
+                <h2 class="text-xl font-semibold text-gray-400 flex items-center gap-2">
+                    <i class="fa-solid fa-bolt text-yellow-500"></i> Available Now
+                </h2>
+                <div class="flex gap-4 text-xs font-bold text-gray-600">
+                    <span class="text-violet-500">CHEAPEST</span>
+                    <span>FASTEST</span>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 gap-4" id="results-container">
+                <!-- Example Ride -->
+                <div class="ride-card p-6 rounded-3xl flex flex-col md:flex-row justify-between items-center cursor-pointer group">
+                    <div class="flex items-center gap-8">
+                        <div class="text-center min-w-[70px]">
+                            <p class="text-2xl font-bold">10:30</p>
+                            <p class="text-[10px] text-gray-500 font-bold">TODAY</p>
+                        </div>
+                        <div class="h-12 w-[2px] bg-gray-800 relative">
+                            <div class="absolute -top-1 -left-1 w-2 h-2 rounded-full bg-violet-500 shadow-[0_0_8px_#8b5cf6]"></div>
+                            <div class="absolute -bottom-1 -left-1 w-2 h-2 rounded-full bg-pink-500 shadow-[0_0_8px_#ec4899]"></div>
+                        </div>
+                        <div class="text-center min-w-[70px]">
+                            <p class="text-2xl font-bold">14:50</p>
+                            <p class="text-[10px] text-gray-500 font-bold">ARRIVE</p>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-lg font-semibold flex items-center gap-2">
+                                Mumbai <i class="fa-solid fa-chevron-right text-[10px] text-gray-600"></i> Pune
+                            </p>
+                            <div class="flex items-center gap-3 mt-1">
+                                <span class="bg-violet-500/10 text-violet-400 px-2 py-0.5 rounded text-[10px] font-bold border border-violet-500/20">CAR</span>
+                                <p class="text-sm text-gray-500">Vikram K. • <i class="fa-solid fa-star text-yellow-500 text-[10px]"></i> 4.7</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-6 md:mt-0 text-right">
+                        <p class="text-3xl font-extrabold text-white">₹450</p>
+                        <span class="text-[10px] bg-green-500/10 text-green-400 px-2 py-1 rounded-full font-bold">VERIFIED DRIVER</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const indianCities = [
+            "Mumbai", "Delhi", "Bangalore", "Hyderabad", "Ahmedabad", "Chennai", "Kolkata", 
+            "Surat", "Pune", "Jaipur", "Lucknow", "Kanpur", "Nagpur", "Indore", "Thane", 
+            "Bhopal", "Visakhapatnam", "Pimpri-Chinchwad", "Patna", "Vadodara", "Ghaziabad", 
+            "Ludhiana", "Agra", "Nashik", "Faridabad", "Meerut", "Rajkot", "Kalyan-Dombivli", 
+            "Vasai-Virar", "Varanasi", "Srinagar", "Aurangabad", "Dhanbad", "Amritsar", 
+            "Navi Mumbai", "Allahabad", "Ranchi", "Howrah", "Coimbatore", "Jabalpur", 
+            "Gwalior", "Vijayawada", "Jodhpur", "Madurai", "Raipur", "Kota", "Guwahati", 
+            "Chandigarh", "Solapur", "Hubli-Dharwad", "Bareilly", "Moradabad", "Mysore", 
+            "Gurgaon", "Aligarh", "Jalandhar", "Tiruchirappalli", "Bhubaneswar", "Salem", 
+            "Warangal", "Guntur", "Bhiwandi", "Saharanpur", "Gorakhpur", "Bikaner", "Amravati"
+        ];
+
+        function setupSuggestions(inputId, listId) {
+            const input = document.getElementById(inputId);
+            const list = document.getElementById(listId);
+
+            input.addEventListener('input', () => {
+                const val = input.value.toLowerCase();
+                list.innerHTML = '';
+                
+                if (!val) {
+                    list.style.display = 'none';
+                    return;
+                }
+
+                const filtered = indianCities.filter(city => 
+                    city.toLowerCase().startsWith(val)
+                ).slice(0, 6);
+
+                if (filtered.length > 0) {
+                    filtered.forEach(city => {
+                        const item = document.createElement('div');
+                        item.className = 'suggestion-item';
+                        item.innerHTML = `<i class="fa-solid fa-location-dot"></i> ${city}`;
+                        item.onclick = () => {
+                            input.value = city;
+                            list.style.display = 'none';
+                        };
+                        list.appendChild(item);
+                    });
+                    list.style.display = 'block';
+                } else {
+                    list.style.display = 'none';
+                }
+            });
+
+            // Hide dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!input.contains(e.target) && !list.contains(e.target)) {
+                    list.style.display = 'none';
+                }
+            });
+        }
+
+        // Initialize suggestions for both fields
+        setupSuggestions('from-input', 'from-suggestions');
+        setupSuggestions('to-input', 'to-suggestions');
+
+        function selectVehicle(element, type) {
+            document.querySelectorAll('.vehicle-option').forEach(opt => opt.classList.remove('active'));
+            element.classList.add('active');
+        }
+
+        document.querySelector('.btn-search').addEventListener('click', function() {
+            this.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i>';
+            setTimeout(() => {
+                this.innerHTML = 'SEARCH';
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
